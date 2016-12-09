@@ -3,10 +3,12 @@ import queue
 import re
 import json
 import urllib
+from bs4 import BeautifulSoup
+
 
 class LinkExtractor():
 
-    def __init__(self):
+    def __init__(self, file):
         self.driver = webdriver.PhantomJS() #webdriver.Firefox("/Applications/Firefox.app/Contents/MacOS/firefox-bin")
         self.crawller_queue = queue.Queue()
         self.visited_checker = set()
@@ -15,7 +17,7 @@ class LinkExtractor():
         self.crawller_queue.put(seed_url)
         # self.visited_checker.add(seed_url)
 
-        self.file_handler = open("urls.txt","w+")
+        self.file_handler = open(file,"w+")
 
     def extract(self):
 
@@ -38,23 +40,25 @@ class LinkExtractor():
 
         self.driver.close()
 
-    def extractFromXML(self):
-        batch = ""
-        #https://newsela.com/api/v2/search?category=health&page=7&page_size=20&story_type=news&story_type=editorial&tiles=true&type=header
-        url = "https://newsela.com/api/v2/search?category=health&page=1&page_size=1000&story_type=news&story_type=editorial&tiles=true&type=header"
-        req = urllib.request.Request(url)
-        json_code =urllib.request.urlopen(req).read()
-        print(json_code)
-        art_list = json.loads(json_code.decode("utf-8"))
-        for art in art_list:
-            url = art["url"]
-            batch = "\n".join((batch, url))
-            if len(batch) >= 10000:
-                self.file_handler.write(batch)
-        self.file_handler.write(batch)
+    def extractFromXMLForNews(self):
+        url_pattern = "https://newsela.com/api/v2/search?languages=en&page={NUMBER}&page_size=100"
+        for page_numnber in range(1, 36):
+            print("start processing", str(page_numnber), "\n")
+            batch = ""
+            url = url_pattern.replace("{NUMBER}", str(page_numnber))
+            req = urllib.request.Request(url)
+            json_code =urllib.request.urlopen(req).read()
+            obj = json.loads(json_code.decode("utf-8"))
+            art_list = (obj["hits"])["hits"]
+            for art in art_list:
+                url = (art["_source"])["url"]
+                batch = "\n".join((batch, url))
+                if len(batch) >= 10000:
+                    self.file_handler.write(batch)
+            self.file_handler.write(batch)
 
 
 if __name__ == "__main__":
-    py = LinkExtractor()
+    py = LinkExtractor("urls_news.txt")
     #py.extract()
-    py.extractFromXML()
+    py.extractFromXMLForNews()
