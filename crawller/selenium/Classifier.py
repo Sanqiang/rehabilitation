@@ -206,7 +206,7 @@ if True:
                                          ngram_range=(1, ngram))
             X1 = count_vect.fit_transform(dataset1["data"])
             y1 = dataset1["target"]
-            print("finish", "transform")
+            # print("finish", "transform")
 
             # feature-level
             X2 = dataset2["data"]
@@ -216,16 +216,17 @@ if True:
             if feature < X1.shape[1]:
                 X1 = SelectKBest(chi2, k=feature).fit_transform(X1, y)
             X1 = X1.todense()
-            print("finish", "Kbest")
-            X = np.append(X1, np.matrix(X2), axis=1)
+            # print("finish", "Kbest")
+            X = np.concatenate((X1, np.matrix(X2)), axis=1)
+            # print("finish", "append")
 
             for c in Cs:
                 key = " ".join(["feature", str(feature), "c", str(c), "ngram", str(ngram)])
-                # try:
-                clf = tree.DecisionTreeClassifier()
-                # clf = LogisticRegression(multi_class='ovr', C=c)
-                # clf = svm.SVC(C=c, kernel='linear')
-                scores = cross_val_score(clf, X, y, cv=10, n_jobs= 1, verbose=0)
-                print(key, reduce(lambda x, y: x + y, scores) / len(scores))
-                # except Exception as exp:
-                #     print("error: ", key, "\t", exp)
+                try:
+                    clf = tree.DecisionTreeClassifier()
+                    # clf = LogisticRegression(multi_class='ovr', C=c)
+                    # clf = svm.SVC(C=c, kernel='linear')
+                    scores = cross_val_score(clf, X, y, cv=10, n_jobs= 1, verbose=0)
+                    print(key, reduce(lambda x, y: x + y, scores) / len(scores))
+                except Exception as exp:
+                    print("error: ", key, "\t", exp)
