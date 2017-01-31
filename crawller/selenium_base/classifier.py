@@ -89,7 +89,6 @@ def get_dataset_text_health():
             dataset["target"].append(idx)
             # loop_idx -= 1
 
-
             idx += 1
 
         grades.clear()
@@ -156,9 +155,9 @@ dataset1 = get_dataset_text_all()
 dataset2 = get_dataset_stat_all()
 print("finish get dataset")
 
-ngrams = [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-Cs = [1]
-features = [50000, 100000, 150000,200000,240000]
+ngrams = [2,3,4,5,6,7]
+Cs = [10]
+features = [100000, 150000,200000,240000]
 
 # samp_order = random.sample(range(len(y)),len(y))
 # X = [X[ind] for ind in samp_order]
@@ -220,13 +219,13 @@ if True:
             X = np.concatenate((X1, np.matrix(X2)), axis=1)
             # print("finish", "append")
 
-            for c in Cs:
-                key = " ".join(["feature", str(feature), "c", str(c), "ngram", str(ngram)])
-                try:
-                    clf = tree.DecisionTreeClassifier()
-                    # clf = LogisticRegression(multi_class='ovr', C=c)
-                    # clf = svm.SVC(C=c, kernel='linear')
-                    scores = cross_val_score(clf, X, y, cv=10, n_jobs= 1, verbose=0)
-                    print(key, reduce(lambda x, y: x + y, scores) / len(scores))
-                except Exception as exp:
-                    print("error: ", key, "\t", exp)
+            #for c in Cs:
+            key = " ".join(["feature", str(feature), "c", str(10), "ngram", str(ngram)])
+            try:
+                clf = tree.DecisionTreeClassifier()
+                # clf = LogisticRegression(multi_class='ovr', C=10)
+                # clf = svm.SVC(C=c, kernel='linear')
+                scores = cross_val_score(clf, X, y, cv=10, n_jobs=1, verbose=0)
+                print(key, reduce(lambda x, y: x + y, scores) / len(scores))
+            except Exception as exp:
+                print("error: ", key, "\t", exp)

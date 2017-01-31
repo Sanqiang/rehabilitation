@@ -1,4 +1,4 @@
-from selenium.Data import TextExtractor
+from selenium_base.util.data import TextExtractor
 
 if __name__ == '__main__':
     te = TextExtractor()
