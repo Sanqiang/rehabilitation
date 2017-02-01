@@ -63,8 +63,9 @@ class TextExtractor():
     urls = []
 
     def __init__(self):
-        self.driver = webdriver.Chrome("/Users/zhaosanqiang916/data/chromedriver")
-        self.driver_temp = webdriver.Chrome("/Users/zhaosanqiang916/data/chromedriver")
+        path = "/home/sanqiang/data/drive/chromedriver" #"/Users/zhaosanqiang916/data/"
+        self.driver = webdriver.Chrome(path)
+        self.driver_temp = webdriver.Chrome(path)
 
         # self.driver = webdriver.PhantomJS()
         # self.driver_temp = webdriver.PhantomJS()
@@ -99,22 +100,32 @@ class TextExtractor():
                 output[category] = []
 
             cur_url = "".join((self.base_url, url))
-            self.driver.get(cur_url)
-            #self.driver.add_cookie({"name": "sessionid_v2", "value": "1t834igt3mgj8lxsqy4cffc7pfdmltjk","domain":".newsela.com"})
-            #article = self.driver.find_element_by_id("Article").text()
+            try:
+                self.driver.get(cur_url)
+                #self.driver.add_cookie({"name": "sessionid_v2", "value": "1t834igt3mgj8lxsqy4cffc7pfdmltjk","domain":".newsela.com"})
+                #article = self.driver.find_element_by_id("Article").text()
+            except:
+                print(cur_url, "all level")
             level_links = self.driver.find_elements_by_class_name("level-set")
-            print(len(level_links))
             obj = {}
             for level_link in level_links:
-                tag = level_link.get_attribute("innerHTML")
-                href = level_link.get_attribute("href")
-                self.driver_temp.get(href)
-                #self.driver_temp.add_cookie({"name": "sessionid_v2", "value": "1t834igt3mgj8lxsqy4cffc7pfdmltjk","domain":".newsela.com"})
-                article = self.driver_temp.find_element_by_id("Article").get_attribute("innerText")
-                grade_level = self.driver_temp.find_element_by_class_name("grade_level").get_attribute("innerText")
-                obj[grade_level] = article
-
-                output[category].append(obj)
+                try:
+                    tag = level_link.get_attribute("innerText")
+                    if tag[-1] == "L":
+                        grade_level = int(tag[0: -1])
+                    else:
+                        grade_level = 99999
+                    href = level_link.get_attribute("href")
+                    self.driver_temp.get(href)
+                    tag = level_link.get_attribute("innerHTML")
+                    #self.driver_temp.add_cookie({"name": "sessionid_v2", "value": "1t834igt3mgj8lxsqy4cffc7pfdmltjk","domain":".newsela.com"})
+                    article = self.driver_temp.find_element_by_id("Article").get_attribute("innerText")
+                    # grade_level = self.driver_temp.find_element_by_class_name("grade_level").get_attribute("innerText")
+                    obj[grade_level] = article
+                    print(grade_level)
+                    output[category].append(obj)
+                except:
+                    print(cur_url, grade_level)
 
         output = json.dumps(output)
         f = open("news3.txt", "w")
