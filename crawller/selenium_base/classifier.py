@@ -11,6 +11,7 @@ from sklearn.feature_selection import SelectFromModel
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import SelectKBest
 from sklearn import tree
+from sklearn import linear_model
 
 def get_dataset_stat_health():
     dataset = {}
