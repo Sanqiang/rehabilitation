@@ -28,21 +28,20 @@ if os.path.exists("data_text_x"):
     data_y = pickle.load(f_data_y)
 else:
     for category in obj:
-        if category not in data_text_x:
-            if len(data_text_x) == 2:
-                break
-            print(category)
-            data_text_x[category] = []
-            data_stat_x[category] = []
-            data_y[category] = []
+        category_clean = category.strip()
+        if category_clean not in data_text_x:
+            print(category_clean)
+            data_text_x[category_clean] = []
+            data_stat_x[category_clean] = []
+            data_y[category_clean] = []
 
         data_entries = obj[category]
         for data_entry in data_entries:
             for label in data_entry:
                 text = data_entry[label]
 
-                data_text_x[category].append(text)
-                data_y[category].append(int(label))
+                data_text_x[category_clean].append(text)
+                data_y[category_clean].append(int(label))
 
                 sent_avg_len = 0
                 sent_cnt = 1
@@ -58,7 +57,7 @@ else:
                 sent_avg_len /= sent_cnt
                 word_avg_len /= word_cnt
 
-                data_stat_x[category].append([word_avg_len, sent_avg_len])
+                data_stat_x[category_clean].append([word_avg_len, sent_avg_len])
 
     f_data_text_x = open("data_text_x", "wb")
     f_data_stat_x = open("data_stat_x", "wb")
@@ -79,18 +78,20 @@ for origin_category in data_text_x:
 
         x_stat = data_stat_x[origin_category]
 
-        x = np.concatenate((x_text, np.matrix(x_stat)), axis=1)
+        x = np.concatenate((x_text.todense(), np.matrix(x_stat)), axis=1)
 
 
 
         # regression model
-        reg = linear_model.Ridge (alpha = 1.0)
+        reg = linear_model.Ridge(alpha = 1.0)
         reg.fit(x, y)
 
-        x_text2 = count_vect.fit_transform(data_text_x[target_category])
-        x_stat2 = data_stat_x[target_category]
-        x2 = np.concatenate((x_text2, np.matrix(x_stat2)), axis=1)
         y2 = data_y[target_category]
+
+        x_text2 = count_vect.fit_transform(data_text_x[target_category])
+        x_text2 = SelectKBest(chi2, k=5000).fit_transform(x_text2, y2)
+        x_stat2 = data_stat_x[target_category]
+        x2 = np.concatenate((x_text2.todense(), np.matrix(x_stat2)), axis=1)
 
         r_square = reg.score(x2, y2)
 
